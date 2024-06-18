@@ -4,7 +4,8 @@ pipeline{
     stages{
         stage('zip the file'){
             steps{
-                sh 'zip ansible-${BUILD_ID}.zip * --exclude Jenkinsfile'
+                sh 'rm -rf *.zip || echo ""'
+                sh 'zip -r ansible-${BUILD_ID}.zip * --exclude Jenkinsfile'
             }
         }
         stage('upload artifacts to jfrog'){
@@ -18,9 +19,9 @@ pipeline{
             steps{
                 sshPublisher(publishers: [sshPublisherDesc(configName: 'AnsibleServer', \
                 transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: \
-                'ls', execTimeout: 120000, flatten: false, makeEmptyDirs: false, \
+                'unzip -o ansible-${BUILD_ID}.zip; rm -rf ansible-${BUILD_ID}.zip', execTimeout: 120000, flatten: false, makeEmptyDirs: false, \
                 noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: \
-                '/home/ec2-user', remoteDirectorySDF: false, removePrefix: '', \
+                '.', remoteDirectorySDF: false, removePrefix: '', \
                 sourceFiles: 'ansible-${BUILD_ID}.zip')], usePromotionTimestamp: false, \
                 useWorkspaceInPromotion: false, verbose: false)])
             }
